@@ -4,6 +4,13 @@ import {
   NestFastifyApplication,
 } from "@nestjs/platform-fastify";
 import { AppModule } from "./app.module";
+import { Logger, ValidationPipe } from "@nestjs/common";
+import { env } from "./configs/env";
+import cookieParser from "cookie-parser";
+import compression from "compression";
+import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
+import * as express from "express";
+import { join } from "path";
 
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(
@@ -11,9 +18,39 @@ async function bootstrap() {
     new FastifyAdapter(),
   );
 
-  await app.listen({
-    port: 3333,
-    host: "0.0.0.0",
+  app.useGlobalPipes(
+    new ValidationPipe({
+      errorHttpStatusCode: 422,
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      forbidUnknownValues: true,
+      transform: true,
+    }),
+  );
+
+  app.use(cookieParser());
+
+  app.use(compression());
+
+  app.use("/", express.static(join(__dirname, "..", "public")));
+
+  const config = new DocumentBuilder()
+    .addBearerAuth()
+    .setTitle("Uai-Food")
+    .setDescription("API para o aplicativo Uai-Food")
+    .setVersion("1.0")
+    .build();
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup("docs", app, document, {
+    jsonDocumentUrl: "docs/json",
   });
+
+  await app.listen(
+    {
+      port: env.PORT,
+      host: "0.0.0.0",
+    },
+    () => Logger.log(env.PORT, "ServerStarted"),
+  );
 }
 bootstrap().then((r) => r);
