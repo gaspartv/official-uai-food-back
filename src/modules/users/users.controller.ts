@@ -12,7 +12,7 @@ export class UsersController {
 
   @Throttle({ default: { limit: 2, ttl: 60000 } })
   @IsPublic()
-  @Post("/create")
+  @Post("create")
   @ApiOperation({ summary: "Rota para criar um novo usuário" })
   @ApiResponse({ status: 201, type: UsersViewModel })
   @HttpCode(201)

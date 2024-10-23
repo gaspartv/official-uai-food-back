@@ -1,5 +1,8 @@
 import * as bcrypt from "bcrypt";
 import { env } from "../../configs/env";
+import { HandleDate } from "../../utils/handle-date.util";
+import cuid from "cuid";
+import { BaseEntity } from "../../common/entities/base.entity";
 
 interface UsersEntityInterface {
   id?: string;
@@ -24,12 +27,7 @@ interface UsersEntityCreate {
   password: string;
 }
 
-export class UsersEntity {
-  private readonly _id: string;
-  private _createdAt: Date;
-  private _updatedAt: Date;
-  private _deletedAt: Date | null;
-  private _disabledAt: Date | null;
+export class UsersEntity extends BaseEntity {
   private _firstName: string;
   private _lastName: string;
   private _username: string;
@@ -39,11 +37,7 @@ export class UsersEntity {
   private _lastLoginAt: Date;
 
   constructor(dto?: UsersEntityInterface) {
-    this._id = dto?.id;
-    this._createdAt = dto?.createdAt;
-    this._updatedAt = dto?.updatedAt;
-    this._deletedAt = dto?.deletedAt;
-    this._disabledAt = dto?.disabledAt;
+    super(dto);
     this._firstName = dto?.firstName;
     this._lastName = dto?.lastName;
     this._username = dto?.username;
@@ -75,10 +69,7 @@ export class UsersEntity {
   }
 
   set create(dto: UsersEntityCreate) {
-    this._createdAt = new Date();
-    this._updatedAt = new Date();
-    this._deletedAt = null;
-    this._disabledAt = null;
+    this.baseCreate = new Date();
     this._firstName = dto.firstName;
     this._lastName = dto.lastName;
     this._username = dto.username;
