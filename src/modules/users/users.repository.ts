@@ -2,36 +2,52 @@ import { ConflictException, Injectable } from "@nestjs/common";
 import { PrismaService } from "../../providers/prisma/prisma.service";
 import { UsersEntity } from "./users.entity";
 import { UsersResponseDto } from "./dtos/users.response.dto";
+import { Prisma } from "@prisma/client";
 
 @Injectable()
 export class UsersRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   async alreadyExists(
-    email?: string,
+    emails?: string[],
     username?: string,
     id?: string,
   ): Promise<void> {
-    if (!email && !username) {
+    if (!emails?.length && !username) {
       throw new ConflictException(
         "E-mail ou nome de usuário devem ser fornecidos",
       );
     }
-    const where =
-      email && username
-        ? { OR: [{ email }, { username }] }
-        : email
-          ? { email }
-          : { username };
-    const userFound = await this.prisma.user.findFirst({ where });
+
+    const where: Prisma.UserWhereInput = {};
+
+    if (emails.length && username) {
+      where.OR = [
+        { Emails: { some: { email: { in: emails } } } },
+        { username },
+      ];
+    } else if (emails.length) {
+      where.Emails = { some: { email: { in: emails } } };
+    } else {
+      where.username = username;
+    }
+
+    const userFound = await this.prisma.user.findFirst({
+      where,
+      include: { Emails: true },
+    });
+
     if (userFound) {
       if (id && userFound.id === id) return;
+      const emailAlreadyExists = userFound.Emails.find((emailObject) => {
+        emails.includes(emailObject.email);
+      });
 
-      throw new ConflictException(
-        `Usuário com ${
-          email === userFound.email ? "email" : "username"
-        } ${email === userFound.email ? email : username} já existe!`,
-      );
+      const conflictDetail = emailAlreadyExists
+        ? `email ${emailAlreadyExists.email}`
+        : `username ${username}`;
+
+      throw new ConflictException(`Usuário com ${conflictDetail} já existe!`);
     }
   }
 

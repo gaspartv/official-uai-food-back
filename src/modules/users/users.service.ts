@@ -18,7 +18,7 @@ export class UsersService {
   ) {}
 
   async createUser(dto: UsersCreateDto): Promise<UsersViewModel> {
-    await this.usersRepository.alreadyExists(dto.email, dto.username);
+    await this.usersRepository.alreadyExists(emailObject.email, dto.username);
 
     const User = new UsersEntity();
     User.create = dto;

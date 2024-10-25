@@ -13,18 +13,20 @@ export class RedisService {
     });
   }
 
-  async set(key: string, value: string, ttl: number | undefined = undefined) {
-    if (ttl) {
-      return this.client.set(key, value, "EX", ttl);
-    }
-    await this.client.set(key, value);
+  set(
+    key: string,
+    value: string,
+    ttl: number | undefined = undefined,
+  ): Promise<"OK"> {
+    if (ttl) return this.client.set(key, value, "EX", ttl);
+    this.client.set(key, value);
   }
 
-  async get(key: string): Promise<string | null> {
+  get(key: string): Promise<string | null> {
     return this.client.get(key);
   }
 
-  async del(key: string): Promise<void> {
-    await this.client.del(key);
+  del(key: string): void {
+    this.client.del(key);
   }
 }

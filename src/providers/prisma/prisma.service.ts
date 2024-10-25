@@ -20,8 +20,4 @@ export class PrismaService
     Logger.warn("Prisma disconnected", "PrismaService");
     await this.$disconnect();
   }
-
-  extends() {
-    return this.$extends({});
-  }
 }
