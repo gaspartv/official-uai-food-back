@@ -5,6 +5,7 @@ import { UsersService } from "./users.service";
 import { IsPublic } from "../../common/decorators/is-public.decorator";
 import { Throttle } from "@nestjs/throttler";
 import { ApiOperation, ApiResponse } from "@nestjs/swagger";
+import { MessageDto } from "../../common/dtos/message.dto";
 
 @Controller("users")
 export class UsersController {
@@ -16,7 +17,7 @@ export class UsersController {
   @ApiOperation({ summary: "Rota para criar um novo usuário" })
   @ApiResponse({ status: 201, type: UsersViewModel })
   @HttpCode(201)
-  createUser(@Body() body: UsersCreateDto): Promise<UsersViewModel> {
+  createUser(@Body() body: UsersCreateDto): Promise<MessageDto> {
     return this.usersService.createUser(body);
   }
 

@@ -2,6 +2,10 @@ import * as bcrypt from "bcrypt";
 import { env } from "../../configs/env";
 import { BaseEntity } from "../../common/entities/base.entity";
 import { Language, UserType } from "@prisma/client";
+import { HandleDate } from "../../utils/handle-date.util";
+import { ConflictException } from "@nestjs/common";
+import { Security } from "../../utils/security.util";
+import { Generate } from "../../utils/generate.utils";
 
 interface UsersEntityInterface {
   id?: string;
@@ -19,7 +23,7 @@ interface UsersEntityInterface {
   nationalId?: string;
   nationalIdHash?: string;
   passwordHash?: string;
-  birthDate?: Date | null;
+  birthDate?: string | null;
   avatarUrl?: string | null;
   language?: Language;
   darkMode?: boolean;
@@ -37,9 +41,9 @@ interface UsersEntityCreate {
   username: string;
   nationalId: string;
   password: string;
-  birthDate: Date | null;
-  language: Language;
-  darkMode: boolean;
+  birthDate?: string | null;
+  language?: Language;
+  darkMode?: boolean;
   businessId: string;
 }
 
@@ -54,7 +58,7 @@ export class UsersEntity extends BaseEntity {
   private _nationalId: string;
   private _nationalIdHash: string;
   private _passwordHash: string;
-  private _birthDate: Date | null;
+  private _birthDate: string | null;
   private _avatarUrl: string | null;
   private _language: Language;
   private _darkMode: boolean;
@@ -125,35 +129,97 @@ export class UsersEntity extends BaseEntity {
 
   set create(dto: UsersEntityCreate) {
     this.baseCreate = new Date();
-    this._code = Math.random().toString(12).substring(2); // TODO: Implement a better code generator
+    this._code = Generate.code();
     this._lastLoginAt = null;
     this._firstName = dto.firstName;
     this._lastName = dto.lastName;
-    this._username = dto.username;
-
-    this.passwordHash = dto.password;
+    this.handleUserName(dto.username);
+    this.handleNationalId(dto.nationalId);
+    this.handlePasswordHash(dto.password);
+    this._birthDate = dto.birthDate ? dto.birthDate : null;
+    this._avatarUrl = null;
+    this._language = dto.language ? dto.language : Language.pt_BR;
+    this._darkMode = dto.darkMode ? dto.darkMode : false;
+    this._isVerified = false;
+    this._verificationToken = ""; // TODO: Implementar geração do verificationToken
+    this._resetPasswordToken = null;
+    this._lastPasswordChangeAt = null;
+    this._twoFactorEnabled = false;
+    this._businessId = dto.businessId;
   }
 
-  set passwordHash(password: string) {
-    if (password.length < 8) {
-      throw new Error("Password must be at least 8 characters long");
-    }
-    if (password.length > 128) {
-      throw new Error("Password must be at most 128 characters long");
-    }
-    const salt = bcrypt.genSaltSync(env.SALT_OR_ROUNDS);
-    this._password = bcrypt.hashSync(password, salt);
+  set disable(date: Date) {
+    this._updatedAt = HandleDate.UTC(date, -3);
+    this._disabledAt = HandleDate.UTC(date, -3);
   }
 
-  set updateDate(date: Date) {
-    this._updatedAt = date;
+  set enable(date: Date) {
+    this._updatedAt = HandleDate.UTC(date, -3);
+    this._disabledAt = null;
   }
 
-  set lastLoginAt(date: Date) {
-    this._lastLoginAt = date;
+  set delete(date: Date) {
+    this._updatedAt = HandleDate.UTC(date, -3);
+    this._deletedAt = HandleDate.UTC(date, -3);
+    this._disabledAt = HandleDate.UTC(date, -3);
+  }
+
+  set attLastLogin(date: Date) {
+    this._updatedAt = HandleDate.UTC(date, -3);
+    this._lastLoginAt = HandleDate.UTC(date, -3);
+  }
+
+  set changeType(type: UserType) {
+    this._updatedAt = HandleDate.UTC(new Date(), -3);
+    this._type = type;
   }
 
   set isVerified(isVerified: boolean) {
     this._isVerified = isVerified;
+  }
+
+  private handleNationalId(nationalId: string) {
+    if (nationalId.length < 1) {
+      throw new ConflictException(
+        "nationalId precisa conter 1 ou mais caracteres",
+      );
+    }
+    if (nationalId.length > 20) {
+      throw new ConflictException(
+        "nationalId precisa conter 20 ou menos caracteres",
+      );
+    }
+    this._nationalId = Security.hash(nationalId);
+    this._nationalIdHash = Security.encrypt(nationalId);
+  }
+
+  private handleUserName(userName: string) {
+    if (userName.length < 4) {
+      throw new ConflictException(
+        "userName precisa conter 5 ou mais caracteres",
+      );
+    }
+    if (userName.length > 20) {
+      throw new ConflictException(
+        "userName precisa conter 20 ou menos caracteres",
+      );
+    }
+    this._username = Security.hash(userName);
+    this._usernameHash = Security.encrypt(userName);
+  }
+
+  private handlePasswordHash(password: string) {
+    if (password.length < 8) {
+      throw new ConflictException(
+        "Password must be at least 8 characters long",
+      );
+    }
+    if (password.length > 128) {
+      throw new ConflictException(
+        "Password must be at most 128 characters long",
+      );
+    }
+    const salt = bcrypt.genSaltSync(env.SALT_OR_ROUNDS);
+    this._passwordHash = bcrypt.hashSync(password, salt);
   }
 }

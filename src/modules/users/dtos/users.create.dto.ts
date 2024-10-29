@@ -2,6 +2,7 @@ import {
   IsArray,
   IsBoolean,
   IsEnum,
+  IsOptional,
   IsString,
   ValidateNested,
 } from "class-validator";
@@ -26,7 +27,7 @@ class TelephoneDto {
 
 export class UsersCreateDto {
   @IsString()
-  companyId: string;
+  businessId: string;
 
   @IsString()
   firstName: string;
@@ -43,12 +44,15 @@ export class UsersCreateDto {
   @IsString()
   password: string;
 
+  @IsOptional()
   @IsString()
   birthDate?: string;
 
+  @IsOptional()
   @IsEnum(Language)
   language?: Language;
 
+  @IsOptional()
   @IsBoolean()
   darkMode?: boolean;
 

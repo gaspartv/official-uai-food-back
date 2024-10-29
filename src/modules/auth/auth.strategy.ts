@@ -27,13 +27,12 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
   async validate(username: string, password: string): Promise<AccessTokenDto> {
     const usersFound = await this.authService.validateUser(username, password);
     const User = new UsersEntity(usersFound);
-    User.lastLoginAt = HandleDate.UTC(new Date(), -3);
-    User.updateDate = HandleDate.UTC(new Date(), -3);
+    User.attLastLogin = HandleDate.UTC(new Date(), -3);
     await this.usersRepository.update(User);
 
     const sessionId = "session-" + User.id;
     const sessionFound = await this.redisService.get(sessionId);
-    if (sessionFound) await this.redisService.del(sessionId);
+    if (sessionFound) this.redisService.del(sessionId);
     await this.redisService.set(sessionId, "session", env.SESSION_EXPIRES);
 
     return Generate.accessToken(

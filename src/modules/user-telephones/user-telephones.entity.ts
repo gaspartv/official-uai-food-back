@@ -1,41 +1,41 @@
-import { UserEmailType } from "@prisma/client";
-import { Security } from "../../utils/security.util";
+import { UserTelephoneType } from "@prisma/client";
 import { BaseEntity } from "../../common/entities/base.entity";
+import { Security } from "../../utils/security.util";
 
-interface UserEmailsEntityInterface {
+interface UserTelephonesEntityInterface {
   id: string;
   createdAt: Date;
   updatedAt: Date;
   deletedAt: Date | null;
   disabledAt: Date | null;
   isPrimary: boolean;
-  type: UserEmailType;
-  email: string;
-  emailHash: string;
+  type: UserTelephoneType;
+  telephone: string;
+  telephoneHash: string;
   isVerified: boolean;
   userId: string;
 }
 
-interface UserEmailsEntityCreateInterface {
-  type: UserEmailType;
-  email: string;
+interface UserTelephonesEntityCreateInterface {
+  type: UserTelephoneType;
+  telephone: string;
   userId: string;
 }
 
-export class UserEmailsEntity extends BaseEntity {
+export class UserTelephonesEntity extends BaseEntity {
   private _isPrimary: boolean;
-  private _type: UserEmailType;
-  private _email: string;
-  private _emailHash: string;
+  private _type: UserTelephoneType;
+  private _telephone: string;
+  private _telephoneHash: string;
   private _isVerified: boolean;
   private _userId: string;
 
-  constructor(dto?: UserEmailsEntityInterface) {
+  constructor(dto?: UserTelephonesEntityInterface) {
     super(dto);
     this._isPrimary = dto?.isPrimary;
     this._type = dto?.type;
-    this._email = dto?.email;
-    this._emailHash = dto?.emailHash;
+    this._telephone = dto?.telephone;
+    this._telephoneHash = dto?.telephoneHash;
     this._isVerified = dto?.isVerified;
     this._userId = dto?.userId;
   }
@@ -49,8 +49,8 @@ export class UserEmailsEntity extends BaseEntity {
       disabledAt: this._disabledAt,
       isPrimary: this._isPrimary,
       type: this._type,
-      email: this._email,
-      emailHash: this._emailHash,
+      telephone: this._telephone,
+      telephoneHash: this._telephoneHash,
       isVerified: this._isVerified,
       userId: this._userId,
     };
@@ -60,20 +60,19 @@ export class UserEmailsEntity extends BaseEntity {
     return this._id;
   }
 
-  get email() {
-    return this._emailHash;
+  get telephone() {
+    return this._telephoneHash;
   }
 
-  set email(email: string) {
-    this._email = Security.hash(email);
-    this._emailHash = Security.encrypt(email);
+  set telephone(telephone: string) {
+    this._telephone = Security.hash(telephone);
+    this._telephoneHash = Security.encrypt(telephone);
   }
 
-  set create(dto: UserEmailsEntityCreateInterface) {
-    this.baseCreate = new Date();
+  set create(dto: UserTelephonesEntityCreateInterface) {
     this._isPrimary = false;
     this._type = dto.type;
-    this.email = dto.email;
+    this.telephone = dto.telephone;
     this._isVerified = false;
     this._userId = dto.userId;
   }
