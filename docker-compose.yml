@@ -23,6 +23,18 @@ services:
     volumes:
       - redis_data:/data
 
+  uai_food_rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+
 #  uai_food_app:
 #    container_name: uai-food-app
 #    build:
@@ -47,3 +59,5 @@ networks:
 volumes:
   postgres_data:
   redis_data:
+  rabbitmq_data:
+    driver: local

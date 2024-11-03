@@ -11,6 +11,7 @@ import compression from "compression";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import * as express from "express";
 import { join } from "path";
+import { Transport } from "@nestjs/microservices";
 
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(
@@ -33,6 +34,20 @@ async function bootstrap() {
   app.use(compression());
 
   app.use("/", express.static(join(__dirname, "..", "public")));
+
+  app.connectMicroservice({
+    transport: Transport.RMQ,
+    options: {
+      urls: [env.RABBITMQ_URL],
+      noAck: false,
+      queue: env.RABBITMQ_SEND,
+      queueOptions: {
+        durable: true,
+      },
+    },
+  });
+
+  await app.startAllMicroservices();
 
   const config = new DocumentBuilder()
     .addBearerAuth()

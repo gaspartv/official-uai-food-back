@@ -127,6 +127,10 @@ export class UsersEntity extends BaseEntity {
     return this._id;
   }
 
+  get firstName() {
+    return this._firstName;
+  }
+
   set create(dto: UsersEntityCreate) {
     this.baseCreate = new Date();
     this._code = Generate.code();

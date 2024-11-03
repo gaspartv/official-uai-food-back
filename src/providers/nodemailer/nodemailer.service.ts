@@ -17,7 +17,17 @@ export class NodemailerService {
     });
   }
 
-  async sendEmail(to: string, subject: string, text?: string, html?: string) {
+  async sendEmail({
+    to,
+    subject,
+    html,
+    text,
+  }: {
+    to: string;
+    subject: string;
+    text?: string;
+    html?: string;
+  }) {
     const from = `"Equipe Uai Food" <${env.SMTP_USER}>`;
     const mailOptions = {
       from,

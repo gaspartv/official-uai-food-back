@@ -33,6 +33,10 @@ const envSchema = z.object({
   TWILIO_ACCOUNT_SID: z.string(),
   TWILIO_AUTH_TOKEN: z.string(),
   TWILIO_PHONE_NUMBER: z.string(),
+
+  RABBITMQ_URL: z.string(),
+  RABBITMQ_SEND: z.string(),
+  RABBITMQ_RECEIVE: z.string(),
 });
 
 const _env = envSchema.safeParse(process.env);
